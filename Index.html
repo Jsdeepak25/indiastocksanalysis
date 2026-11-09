@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Institutional SMC / ICT Option Terminal V5.1 Pro</title>
+  <style>
+    :root {
+      --bg-base: #06080d;
+      --bg-card: #0e121a;
+      --bg-header: #151a26;
+      --border-color: #202738;
+      --accent-green: #00e676;
+      --accent-red: #ff3b57;
+      --accent-yellow: #ffd600;
+      --accent-cyan: #00e5ff;
+      --text-main: #f0f3fa;
+      --text-muted: #848e9c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+    body { background-color: var(--bg-base); color: var(--text-main); padding: 8px; font-size: 11px; }
+
+    /* Top Master Header */
+    .terminal-header {
+      background: linear-gradient(90deg, #0f1422 0%, #151d30 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; color: var(--accent-green); letter-spacing: 0.5px; }
+    .status-pill { background: rgba(0,230,118,0.12); color: var(--accent-green); border: 1px solid var(--accent-green); padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+
+    /* Benchmarks Ticker Bar */
+    .ticker-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .ticker-bar::-webkit-scrollbar { display: none; }
+    .ticker-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 10px;
+      border-radius: 6px;
+      min-width: 115px;
+      flex-shrink: 0;
+    }
+    .ticker-name { color: var(--text-muted); font-size: 9px; font-weight: 600; }
+    .ticker-val { font-size: 12px; font-weight: 700; margin: 2px 0; }
+    .up { color: var(--accent-green); }
+    .down { color: var(--accent-red); }
+
+    /* Search & Add Stock Bar */
+    .search-panel {
+      background: var(--bg-card);
+      border: 1px solid #2a344d;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .search-panel input {
+      width: 100%;
+      background: #090c13;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+    .search-panel input:focus {
+      border-color: var(--accent-cyan);
+    }
+    .search-panel button {
+      background: var(--accent-cyan);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    /* Chart Scanner Box */
+    .scanner-panel {
+      background: var(--bg-card);
+      border: 1px dashed #2d3852;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .scanner-panel { grid-template-columns: 1fr; }
+    }
+    .scanner-panel input {
+      background: #090c13;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+    }
+    .scanner-panel button {
+      background: var(--accent-green);
+      color: #000;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 5px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    /* AI Live Result Alert */
+    #aiDecisionBox {
+      background: #111726;
+      border-left: 4px solid var(--accent-green);
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      display: none;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    /* Grid Layout */
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 8px;
+    }
+    @media (max-width: 950px) {
+      .grid-container { grid-template-columns: 1fr; }
+    }
+    .panel-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .panel-header {
+      background: var(--bg-header);
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .table-scroll { overflow-x: auto; max-height: 480px; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th {
+      background: #0b0f17;
+      color: var(--text-muted);
+      font-size: 9.5px;
+      text-transform: uppercase;
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-color);
+      text-align: left;
+    }
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #131826;
+      font-size: 11px;
+    }
+    tr:hover { background: #131929; }
+
+    /* Buttons & Toggles */
+    .btn-save {
+      background: #1a2233;
+      border: 1px solid #364463;
+      color: #9aa0a6;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: 0.2s;
+    }
+    .btn-save.saved {
+      background: rgba(0, 230, 118, 0.15);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+    .btn-remove {
+      background: rgba(255, 59, 87, 0.15);
+      border: 1px solid var(--accent-red);
+      color: var(--accent-red);
+      padding: 3px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .btn-remove:hover {
+      background: var(--accent-red);
+      color: #fff;
+    }
+
+    .tag {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 9.5px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .tag-buy { background: rgba(0,230,118,0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+    .tag-sell { background: rgba(255,59,87,0.15); color: var(--accent-red); border: 1px solid var(--accent-red); }
+    .tag-trail { background: rgba(255,214,0,0.15); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); }
+
+    .empty-state {
+      text-align: center;
+      padding: 35px 20px;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Master Header -->
+  <div class="terminal-header">
+    <div class="brand">
+      <span>🏛️ INSTITUTIONAL SMC / ICT ALPHA TERMINAL</span>
+      <span style="color:var(--text-muted); font-size:10px;">| V5.1 PRO</span>
+    </div>
+    <div class="status-pill">● LIVE F&amp;O CONNECTED</div>
+  </div>
+
+  <!-- Benchmarks Bar -->
+  <div class="ticker-bar">
+    <div class="ticker-card"><div class="ticker-name">NIFTY 50</div><div class="ticker-val up">25,044.65</div><span class="up">+0.23%</span></div>
+    <div class="ticker-card"><div class="ticker-name">BANK NIFTY</div><div class="ticker-val up">59,741.25</div><span class="up">+1.51%</span></div>
+    <div class="ticker-card"><div class="ticker-name">SENSEX</div><div class="ticker-val up">81,106.65</div><span class="up">+0.13%</span></div>
+    <div class="ticker-card"><div class="ticker-name">INDIA VIX</div><div class="ticker-val down">17.42</div><span class="down">-5.48%</span></div>
+    <div class="ticker-card"><div class="ticker-name">FIN NIFTY</div><div class="ticker-val up">27,384.90</div><span class="up">+0.75%</span></div>
+  </div>
+
+  <!-- Search & One-Click Add Bar -->
+  <div class="search-panel">
+    <div class="search-input-wrap">
+      <input type="text" id="symbolSearchInput" placeholder="🔍 Search Stock or Strike (e.g. NIFTY 25000 CE, RELIANCE, SBIN)..." oninput="filterWatchlist()" />
+    </div>
+    <button onclick="addNewCustomStock()">➕ Quick Add</button>
+  </div>
+
+  <!-- AI Chart Scanner -->
+  <div class="scanner-panel">
+    <input type="text" id="apiKeyField" placeholder="Paste Gemini API Key (Auto-saved)..." />
+    <input type="file" id="chartImgUpload" accept="image/*" />
+    <button id="scanBtn" onclick="runChartScan()">⚡ SCAN LIVE CHART (SMC)</button>
+  </div>
+
+  <div id="aiDecisionBox"></div>
+
+  <!-- Dual Tables Grid -->
+  <div class="grid-container">
+
+    <!-- Left: Watchlist & SMC Setups -->
+    <div class="panel-box">
+      <div class="panel-header">
+        <span>⚡ INSTITUTIONAL SMC SETUP WATCHLIST</span>
+        <span style="color:var(--text-muted); font-size:10px;">Click [★ Save] to add to Portfolio</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>ACTION</th>
+              <th>SYMBOL</th>
+              <th>TF</th>
+              <th>SMC SETUP</th>
+              <th>SIGNAL</th>
+              <th>ENTRY ₹</th>
+              <th>SL ₹</th>
+              <th>TP ₹</th>
+            </tr>
+          </thead>
+          <tbody id="smcWatchlistBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: My Active Trades / Portfolio -->
+    <div class="panel-box">
+      <div class="panel-header">
+        <span>💼 MY ACTIVE TRADES (PORTFOLIO)</span>
+        <span id="portfolioCount" style="color:var(--accent-green); font-size:10px;">0 Active</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>SYMBOL</th>
+              <th>BUY ₹</th>
+              <th>CMP ₹</th>
+              <th>TARGET ₹</th>
+              <th>P&amp;L %</th>
+              <th>ACTION</th>
+              <th>REMOVE</th>
+            </tr>
+          </thead>
+          <tbody id="portfolioBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Master Watchlist Data
+    let masterWatchlist = [
+      { id: "BN54000CE", sym: "BANKNIFTY 54000 CE", tf: "5m", pattern: "Liquidity Sweep + Bullish FVG", sig: "BUY", buy: 340.00, cmp: 382.50, sl: "305.00", tp: 440.00 },
+      { id: "N24500PE", sym: "NIFTY 24500 PE", tf: "15m", pattern: "Bearish Breaker Block Retest", sig: "SELL", buy: 110.00, cmp: 98.40, sl: "128.00", tp: 75.00 },
+      { id: "TATAMOTORS", sym: "TATAMOTORS", tf: "1h", pattern: "Daily Order Block Demand", sig: "BUY", buy: 940.00, cmp: 962.50, sl: "918.00", tp: 1005.00 },
+      { id: "RELIANCE", sym: "RELIANCE", tf: "15m", pattern: "True CHoCH + FVG Imbalance", sig: "BUY", buy: 2970.00, cmp: 3012.00, sl: "2940.00", tp: 3080.00 },
+      { id: "HDFCBANK", sym: "HDFCBANK", tf: "15m", pattern: "Liquidity Purge + Displacement", sig: "BUY", buy: 1630.00, cmp: 1655.00, sl: "1610.00", tp: 1710.00 },
+      { id: "INFY", sym: "INFY", tf: "30m", pattern: "Premium Bearish Fair Value Gap", sig: "SELL", buy: 1845.00, cmp: 1815.00, sl: "1865.00", tp: 1780.00 },
+      { id: "SENSEX81200CE", sym: "SENSEX 81200 CE", tf: "5m", pattern: "High Volume RBR Retest", sig: "BUY", buy: 420.00, cmp: 492.00, sl: "380.00", tp: 550.00 }
+    ];
+
+    // Saved Portfolio (stored in browser LocalStorage - 100% persistent)
+    let savedPortfolio = JSON.parse(localStorage.getItem("terminal_portfolio")) || [];
+
+    function savePortfolioStorage() {
+      localStorage.setItem("terminal_portfolio", JSON.stringify(savedPortfolio));
+    }
+
+    // Toggle Save / Unsave from Watchlist
+    function toggleTradeSave(stockId) {
+      const existingIndex = savedPortfolio.findIndex(item => item.id === stockId);
+      if (existingIndex > -1) {
+        // Unsave (Remove from portfolio)
+        savedPortfolio.splice(existingIndex, 1);
+      } else {
+        // Save (Add to portfolio)
+        const stock = masterWatchlist.find(s => s.id === stockId);
+        if (stock) {
+          savedPortfolio.push({ ...stock });
+        }
+      }
+      savePortfolioStorage();
+      renderTerminal();
+    }
+
+    // Direct Remove button in Active Trades
+    function removeTradeDirect(stockId) {
+      savedPortfolio = savedPortfolio.filter(item => item.id !== stockId);
+      savePortfolioStorage();
+      renderTerminal();
+    }
+
+    // Quick Add custom stock/strike from Search Bar
+    function addNewCustomStock() {
+      const input = document.getElementById("symbolSearchInput");
+      const name = input.value.trim().toUpperCase();
+      if (!name) {
+        alert("Pehle Stock ya Strike ka naam dalein!");
+        return;
+      }
+      const newId = "CUSTOM_" + Date.now();
+      const customItem = {
+        id: newId,
+        sym: name,
+        tf: "5m",
+        pattern: "Realtime Added Strike",
+        sig: "BUY",
+        buy: 100.00,
+        cmp: 105.00,
+        sl: "90.00",
+        tp: 130.00
+      };
+      masterWatchlist.unshift(customItem);
+      savedPortfolio.unshift(customItem);
+      savePortfolioStorage();
+      input.value = "";
+      renderTerminal();
+    }
+
+    // Filter Watchlist as user types
+    function filterWatchlist() {
+      renderWatchlist();
+    }
+
+    function renderWatchlist() {
+      const query = document.getElementById("symbolSearchInput").value.trim().toUpperCase();
+      const tbody = document.getElementById("smcWatchlistBody");
+      tbody.innerHTML = "";
+
+      const filtered = masterWatchlist.filter(item => item.sym.toUpperCase().includes(query));
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Koi stock nahi mila. Upar "➕ Quick Add" dabakar add karein!</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const isSaved = savedPortfolio.some(p => p.id === item.id);
+        const tr = document.createElement("tr");
+        const sigBadge = item.sig === "BUY" ? '<span class="tag tag-buy">BUY (CE)</span>' : '<span class="tag tag-sell">SELL (PE)</span>';
+        
+        tr.innerHTML = `
+          <td>
+            <button class="btn-save ${isSaved ? 'saved' : ''}" onclick="toggleTradeSave('${item.id}')">
+              ${isSaved ? '★ Saved' : '☆ Save'}
+            </button>
+          </td>
+          <td style="font-weight:700; color:#fff;">${item.sym}</td>
+          <td style="color:var(--text-muted);">${item.tf}</td>
+          <td style="color:var(--accent-cyan);">${item.pattern}</td>
+          <td>${sigBadge}</td>
+          <td>₹${item.buy.toFixed(2)}</td>
+          <td style="color:var(--accent-red);">₹${item.sl}</td>
+          <td style="color:var(--accent-green);">₹${item.tp.toFixed(2)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderPortfolio() {
+      const tbody = document.getElementById("portfolioBody");
+      const countLabel = document.getElementById("portfolioCount");
+      tbody.innerHTML = "";
+      countLabel.innerText = `${savedPortfolio.length} Active`;
+
+      if (savedPortfolio.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="empty-state">
+              🚫 <strong>Koi Active Trade Nahi Hai</strong><br>
+              Left side se <strong>[☆ Save]</strong> par tap karke ya search karke trade add karein.
+            </td>
+          </tr>`;
+        return;
+      }
+
+      savedPortfolio.forEach(pos => {
+        const pnl = ((pos.cmp - pos.buy) / pos.buy) * 100;
+        const pnlClass = pnl >= 0 ? "up" : "down";
+        let actionTag = '<span class="tag tag-trail">HOLD ✊</span>';
+        if (pnl >= 15) actionTag = '<span class="tag tag-buy">BOOK PROFIT 💰</span>';
+        else if (pnl <= -8) actionTag = '<span class="tag tag-sell">STOPLOSS 🛑</span>';
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="font-weight:700; color:#fff;">${pos.sym}</td>
+          <td>₹${pos.buy.toFixed(2)}</td>
+          <td>₹${pos.cmp.toFixed(2)}</td>
+          <td style="color:var(--accent-green);">₹${pos.tp.toFixed(2)}</td>
+          <td class="${pnlClass}" style="font-weight:700;">${pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}%</td>
+          <td>${actionTag}</td>
+          <td>
+            <button class="btn-remove" onclick="removeTradeDirect('${pos.id}')" title="Delete from Portfolio">✕ Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderTerminal() {
+      renderWatchlist();
+      renderPortfolio();
+    }
+
+    renderTerminal();
+
+    // Chart Base64 Handler
+    let loadedImageBase64 = "";
+    const savedKey = localStorage.getItem("smc_gemini_key");
+    if (savedKey) document.getElementById("apiKeyField").value = savedKey;
+
+    document.getElementById("chartImgUpload").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        loadedImageBase64 = evt.target.result.split(",")[1];
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Chart AI Scan
+    async function runChartScan() {
+      const key = document.getElementById("apiKeyField").value.trim();
+      const alertBox = document.getElementById("aiDecisionBox");
+      const btn = document.getElementById("scanBtn");
+
+      if (!key) {
+        alert("Pehle Gemini API Key dalein!");
+        return;
+      }
+      if (!loadedImageBase64) {
+        alert("Pehle Live Chart ka screenshot choose karein!");
+        return;
+      }
+
+      localStorage.setItem("smc_gemini_key", key);
+      btn.disabled = true;
+      btn.innerText = "⏳ Scanning Live Chart...";
+      alertBox.style.display = "block";
+      alertBox.innerHTML = "<em>Analyzing Liquidity Sweeps, MSS & FVG Imbalance...</em>";
+
+      const prompt = `
+[LIVE CHART EXECUTION MODE - STRICT ZERO MEMORY BIAS]
+System: Institutional SMC/ICT Option Execution Engine.
+Analyze ONLY the live candle structure visible in this screenshot:
+1. Sweep: Did wick sweep key pool (PDH/PDL/EQH/EQL) and close back inside?
+2. Structure: Displacement MSS / CHoCH confirmed?
+3. Zone: Retest of BISI/SIBI FVG or Breaker Block in 0.5-0.618 Fib?
+4. Output format:
+ACTION: [BUY CE / BUY PE / WAIT]
+ENTRY PRICE: [Exact level]
+STOP-LOSS: [Strict invalidation wick]
+TARGET (TP1 & TP2): [Liquidity Pool]
+RISK:REWARD: [e.g. 1:2.8]
+INSTITUTIONAL SETUP: [One crisp sentence]
+`;
+
+      try {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inline_data: { mime_type: "image/jpeg", data: loadedImageBase64 } }
+              ]
+            }]
+          })
+        });
+
+        const res = await resp.json();
+        if (res.candidates && res.candidates[0].content.parts[0].text) {
+          const out = res.candidates[0].content.parts[0].text.trim();
+          alertBox.innerHTML = `<strong>⚡ LIVE INSTITUTIONAL VERDICT:</strong><br><pre style="white-space: pre-wrap; color:var(--accent-green); font-size:11px; margin-top:6px;">${out}</pre>`;
+        } else if (res.error) {
+          alertBox.innerHTML = `<span style="color:var(--accent-red);">API Error: ${res.error.message}</span>`;
+        }
+      } catch (err) {
+        alertBox.innerHTML = `<span style="color:var(--accent-red);">Network Error: ${err.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "⚡ SCAN LIVE CHART (SMC)";
+      }
+    }
+  </script>
+</body>
+</html>
